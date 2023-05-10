@@ -5,7 +5,7 @@ const host = process.env.HOST
 const port = process.env.PORT
 const clientId = process.env.CLIENT_ID
 
-const connectUrl = `mqtt://${host}:${port}`
+const connectUrl = `mqtt://${host}:${port}` // BROKER URI
 const client = mqtt.connect(connectUrl, {
     clientId,
     // clean: true,
@@ -15,18 +15,18 @@ const client = mqtt.connect(connectUrl, {
     // reconnectPeriod: 1000,
 })
 const data = {
-    // temp
+    // Temperature
     Channel0: '',
-    // vibration
+    // Vibration
     Channel1: '',
-    // ultrasound
+    // Ultrasound
     Channel2: '',
-    // mag_flux
+    // Magnetic Flux
     Channel3: '',
 }
 const topic = process.env.TOPIC
-client.on('connect', () => {
-    console.log('Connected')
+client.on('connect', (connack) => {
+    console.log('Connected', connack)
     client.subscribe([topic], () => {
 
         console.log(`Subscribe to topic '${topic}'`)
@@ -41,4 +41,16 @@ client.on('message', (topic, payload) => {
     console.log(payload.toString()[0]);
     // data={...data, data.Channel0:}
     console.log('Received Message:', topic, payload.toString())
+})
+
+
+client.on("error", function (err) {
+    console.log("Error: " + err)
+    if (err.code == "ENOTFOUND") {
+        console.log("Network error, make sure you have an active internet connection")
+    }
+})
+
+client.on('offline', function () {
+    console.log("Client is currently offline!");
 })
